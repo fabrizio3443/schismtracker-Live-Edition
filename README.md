@@ -1,3 +1,10 @@
+# Schism Tracker - Live Edition
+
+The current fork is a WIP project, that intends to take the Schism Tracker tool and turn
+it into a live performance tool. The project will be mostly for personal use, with the
+possibility of becoming a standard tool for beginner DJs (or PRO DJs that
+like to deep dive into DIY projects) in the future.
+
 # Schism Tracker
 
 Schism Tracker is a free and open-source reimplementation of [Impulse
