@@ -450,6 +450,56 @@ int disko_memclose(disko_t *ds, int keep_buffer)
 	}
 }
 
+/* Returns the block of memory, starting from the current position,
+ * that can be written to by the caller. For optimization purposes,
+ * the memory block returned by this function will write to the
+ * memory stream directly if this is a memory buffer. Note that
+ * this is NOT the case for other buffers. */
+void *disko_memstart(disko_t *ds, size_t size)
+{
+	if (ds->data) {
+		/* Save this beforehand; _dw_bufcheck overwrites it,
+		 * but that's not what we want. */
+		size_t sv = ds->length;
+
+		/* This is a memory disko, so we can do this fast. */
+		if (!_dw_bufcheck(ds, size))
+			return NULL;
+
+		ds->length = sv;
+
+		return ds->data + ds->pos;
+	} else {
+		return malloc(size);
+	}
+}
+
+/* Finalizes a direct memory access through disko_memstart().
+ * Note that this has a couple caveats:
+ * - 'size' can be smaller than the size passed into
+ *   disko_memstart(). This is specifically to ease in buffer
+ *   filling, so for e.g. decompression there is less memory
+ *   overhead from allocating a separate buffer. There are
+ *   some safeties for when 'size' is greater than the original,
+ *   but it is not guaranteed to actually work everywhere.
+ * - There is no check for whether 'size' is less than the
+ *   size passed to disko_memstart(). This should never
+ *   happen anyway, and the caller may want to assert()
+ *   for it. */
+void disko_memend(disko_t *ds, void *mem, size_t size)
+{
+	if (ds->data) {
+		/* Update length */
+		ds->length = MAX(ds->pos + size, ds->length);
+		ds->pos += size;
+	} else {
+		/* write it all */
+		disko_write(ds, mem, size);
+
+		free(mem);
+	}
+}
+
 // ---------------------------------------------------------------------------
 
 static void _export_setup(song_t *dwsong, int *bps)

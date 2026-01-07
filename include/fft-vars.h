@@ -21,22 +21,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SCHISM_PALETTES_H_
-#define SCHISM_PALETTES_H_
+/* This header describes the fft tables for the waterfall page.
+ * Mainly so that we can have everything neatly here and have macros
+ * handle the "one big allocation" for us.
+ * Note that these should be in order of size, from biggest to lowest,
+ * in order to reduce possible weirdness. */
+FFT_VAR(uint32_t, bit_reverse, bufsize)
+FFT_VAR(float, window, bufsize)
+FFT_VAR(float, presin, size)
+FFT_VAR(float, precos, size)
+FFT_VAR(float, state_real, bufsize)
+FFT_VAR(float, state_imag, bufsize)
+FFT_VAR(int16_t, incomingl, bufsize)
+FFT_VAR(int16_t, incomingr, bufsize)
+/* fft data is in range 0..128 */
+FFT_VAR(uint8_t, current_fft_datal, size)
+FFT_VAR(uint8_t, current_fft_datar, size)
 
-struct it_palette {
-	char name[21];
-	uint8_t colors[16][3];
-};
-
-void palette_apply(void);
-void palette_load_preset(int palette_index);
-void palette_to_string(int which, char *str_out);
-int set_palette_from_string(const char *str_in);
-uint32_t palettes_size(void);
-
-extern struct it_palette palettes[];
-extern uint8_t current_palette[16][3];
-extern int current_palette_index;
-
-#endif /* SCHISM_PALETTES_H_ */
+#undef FFT_VAR

@@ -104,6 +104,7 @@ noinst_HEADERS = \
 	include/auto/logoit.h		\
 	include/auto/logoschism.h	\
 	include/auto/schismico_hires.h	\
+	include/auto/schismico.h \
 	include/test.h     \
 	include/atomic.h	\
 	include/bits.h     \
@@ -120,6 +121,7 @@ noinst_HEADERS = \
 	include/fonts.h         \
 	include/fmt-types.h		\
 	include/fmt.h			\
+	include/fft-vars.h		\
 	include/headers.h		\
 	include/ieee-float.h    \
 	include/it.h			\
@@ -168,6 +170,7 @@ noinst_HEADERS = \
 	sys/wii/su_tmd_bin.h        \
 	sys/sdl12/init.h \
 	sys/sdl2/init.h \
+	sys/sdl3/init.h \
 	sys/x11/init.h \
 	sys/win32/win32-vista.h \
 	sys/asio/audio-asio.h
@@ -604,6 +607,8 @@ schismtracker_SOURCES = \
 	player/snd_gm.c			\
 	player/sndmix.c			\
 	player/tables.c			\
+	schism/auto/schismico_hires.c \
+	schism/auto/schismico.c \
 	schism/atomic.c			\
 	schism/audio_loadsave.c		\
 	schism/audio_playback.c		\
@@ -735,6 +740,7 @@ schismtrackertest_SOURCES = \
 	test/tempfile.c             \
 	test/cases/bits.c           \
 	test/cases/config-parser.c  \
+	test/cases/disko.c			\
 	test/cases/mplink.c         \
 	test/cases/slurp.c          \
 	test/cases/str.c			\

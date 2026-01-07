@@ -900,7 +900,8 @@ int csf_first_blank_instrument(song_t *csf, int start);
 
 int csf_get_highest_used_channel(song_t *csf);
 
-
+void csf_set_instrument_panning(song_t *csf, song_voice_t *chan, song_instrument_t *penv,
+	song_sample_t *pins);
 
 int csf_set_wave_config(song_t *csf, uint32_t rate, uint32_t bits, uint32_t channels);
 
@@ -966,6 +967,9 @@ void adlib_patch_apply(song_sample_t *smp, int32_t patchnum);
 
 /* calculate VU meters */
 void csf_calculate_vu_meters(song_t *csf, float vus[MAX_CHANNELS]);
+
+void csf_update_playing_instrument(song_t *csf, int i_changed);
+void csf_update_playing_sample(song_t *csf, int s_changed);
 
 /* ------------------------------------------------------------------------ */
 

@@ -187,14 +187,15 @@ void cfg_load(void)
 # define WIDTH_DEFAULT 640
 # define HEIGHT_DEFAULT 480
 # define WANT_FIXED_DEFAULT 1
-# define WANT_FIXED_WIDTH_DEFAULT 640
-# define WANT_FIXED_HEIGHT_DEFAULT 400
+# define WANT_FIXED_WIDTH_DEFAULT 8
+# define WANT_FIXED_HEIGHT_DEFAULT 5
 #else
 # define WIDTH_DEFAULT 640
 # define HEIGHT_DEFAULT 400
 # define WANT_FIXED_DEFAULT 0
-# define WANT_FIXED_WIDTH_DEFAULT (640 * 5)
-# define WANT_FIXED_HEIGHT_DEFAULT (400 * 6)
+/* 4:3 */
+# define WANT_FIXED_WIDTH_DEFAULT 4
+# define WANT_FIXED_HEIGHT_DEFAULT 3
 #endif
 
 	cfg_get_string(&cfg, "Video", "format", cfg_video_format, ARRAY_SIZE(cfg_video_format), "");
@@ -208,6 +209,43 @@ void cfg_load(void)
 	cfg_video_mousecursor = CLAMP(cfg_video_mousecursor, 0, MOUSE_MAX_STATE);
 	cfg_video_hardware = cfg_get_number(&cfg, "Video", "hardware", 1);
 	cfg_video_want_menu_bar = !!cfg_get_number(&cfg, "Video", "want_menu_bar", 1);
+
+	{
+		/* width and height are now essentially treated as a ratio.
+		 * Okay, so we want these to be treated as screen aspect ratios. However,
+		 * our current code kinda stinks, and really needs these to be multiples
+		 * of the current screen width and height for mouse coordinates to scale
+		 * correctly. */
+		uint32_t x, num, den;
+
+		num = cfg_video_want_fixed_width;
+		den = cfg_video_want_fixed_height;
+
+		/* First, simplify the ratio. This minimizes the potential for
+		 * overflow... */
+		x = bgcd32(num, den);
+		num /= x;
+		den /= x;
+
+		/* We want to find the closest divisor. For 4:3 this just so happens
+		 * to be 5:6.
+		 * Basically, we need to find the number such that
+		 * (wanted width/wanted height) = (num/den) * (640/400).
+		 * Shuffling things around a bit,
+		 * (wanted width/wanted height) / (640/400) = (num/den)
+		 * Finally,
+		 * (wanted width/wanted height) * (400/640) = (num/den) */
+		num *= 400;
+		den *= 640;
+
+		/* Simplify again */
+		x = bgcd32(num, den);
+		num /= x;
+		den /= x;
+
+		cfg_video_want_fixed_width = num * 640;
+		cfg_video_want_fixed_height = den * 400;
+	}
 
 	tmp = dmoz_get_home_directory();
 	cfg_get_string(&cfg, "Directories", "modules", cfg_dir_modules, ARRAY_SIZE(cfg_dir_modules), tmp);

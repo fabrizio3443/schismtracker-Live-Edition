@@ -320,6 +320,7 @@ static int sdl12_video_startup(void)
 		center_enabled = 1;
 	}
 
+	video.desktop.bpp = 0;
 	video.desktop.yuvformat = VIDEO_YUV_NONE;
 
 	if (*cfg_video_format) {
@@ -329,7 +330,7 @@ static int sdl12_video_startup(void)
 			video.desktop.bpp = 24; /* ehhh */
 		} else if (!strcmp(cfg_video_format, "RGB565")) {
 			video.desktop.bpp = 16;
-		} else if (!strcmp(cfg_video_format, "RGB555") || !strcmp(cfg_video_format, "ARGB8888")) {
+		} else if (!strcmp(cfg_video_format, "RGB555") || !strcmp(cfg_video_format, "ARGB1555")) {
 			video.desktop.bpp = 15;
 		} else if (!strcmp(cfg_video_format, "RGB332")) {
 			video.desktop.bpp = 8;
@@ -337,6 +338,12 @@ static int sdl12_video_startup(void)
 			video.desktop.yuvformat = VIDEO_YUV_IYUV;
 		} else if (!strcmp(cfg_video_format, "YV12")) {
 			video.desktop.yuvformat = VIDEO_YUV_YV12;
+		} else if (!strcmp(cfg_video_format, "UYVY")) {
+			video.desktop.yuvformat = VIDEO_YUV_UYVY;
+		} else if (!strcmp(cfg_video_format, "YVYU")) {
+			video.desktop.yuvformat = VIDEO_YUV_YVYU;
+		} else if (!strcmp(cfg_video_format, "YUY2")) {
+			video.desktop.yuvformat = VIDEO_YUV_YUY2;
 		}
 	}
 
@@ -355,7 +362,7 @@ static int sdl12_video_startup(void)
 		y = info->current_h;
 
 		/* Grab current bpp without extra hassle */
-		if (info->vfmt)
+		if (info->vfmt && !video.desktop.bpp)
 			video.desktop.bpp = info->vfmt->BitsPerPixel;
 	}
 
@@ -553,7 +560,7 @@ static void sdl12_video_resize(uint32_t width, uint32_t height)
 		video.type = VIDEO_OPENGL;
 		return;
 		/* We get a nasty little black flicker here, ugh */
-	} else if ((cfg_video_hardware && cfg_video_interpolation == VIDEO_INTERPOLATION_NEAREST) || video.desktop.yuvformat != VIDEO_YUV_NONE) {
+	} else if ((cfg_video_hardware && (cfg_video_interpolation == VIDEO_INTERPOLATION_NEAREST)) || video.desktop.yuvformat != VIDEO_YUV_NONE) {
 		if (video.overlay) {
 			sdl12_FreeYUVOverlay(video.overlay);
 			video.overlay = NULL;
@@ -588,9 +595,27 @@ static void sdl12_video_resize(uint32_t width, uint32_t height)
 					 NATIVE_SCREEN_HEIGHT,
 					 SDL_IYUV_OVERLAY, video.surface);
 				break;
+			case VIDEO_YUV_UYVY:
+				video.overlay = sdl12_CreateYUVOverlay
+					(2 * NATIVE_SCREEN_WIDTH,
+					 NATIVE_SCREEN_HEIGHT,
+					 SDL_UYVY_OVERLAY, video.surface);
+				break;
+			case VIDEO_YUV_YVYU:
+				video.overlay = sdl12_CreateYUVOverlay
+					(2 * NATIVE_SCREEN_WIDTH,
+					 NATIVE_SCREEN_HEIGHT,
+					 SDL_YVYU_OVERLAY, video.surface);
+				break;
+			case VIDEO_YUV_YUY2:
+				video.overlay = sdl12_CreateYUVOverlay
+					(2 * NATIVE_SCREEN_WIDTH,
+					 NATIVE_SCREEN_HEIGHT,
+					 SDL_YUY2_OVERLAY, video.surface);
+				break;
 			}
 
-			if (video.overlay && video.overlay->planes == 3 &&
+			if (video.overlay && (video.overlay->planes == 3 || video.overlay->planes == 1) &&
 				 ((video.desktop.yuvformat != VIDEO_YUV_NONE) || video.overlay->hw_overlay)) {
 				video.type = VIDEO_YUV;
 				video_yuv_setformat(yuvfmt);
